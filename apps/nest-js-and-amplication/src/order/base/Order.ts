@@ -11,21 +11,25 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+
 import {
   IsDate,
   IsString,
   IsOptional,
   MaxLength,
+  IsEnum,
+  IsNumber,
+  Min,
+  Max,
   ValidateNested,
 } from "class-validator";
+
 import { Type } from "class-transformer";
-import { Order } from "../../order/base/Order";
-import { IsJSONValue } from "../../validators";
-import { GraphQLJSON } from "graphql-type-json";
-import { JsonValue } from "type-fest";
+import { EnumOrderStatus } from "./EnumOrderStatus";
+import { User } from "../../user/base/User";
 
 @ObjectType()
-class User {
+class Order {
   @ApiProperty({
     required: true,
   })
@@ -33,29 +37,6 @@ class User {
   @Type(() => Date)
   @Field(() => Date)
   createdAt!: Date;
-
-  @ApiProperty({
-    required: false,
-    type: String,
-  })
-  @IsString()
-  @IsOptional()
-  @Field(() => String, {
-    nullable: true,
-  })
-  email!: string | null;
-
-  @ApiProperty({
-    required: false,
-    type: String,
-  })
-  @IsString()
-  @MaxLength(256)
-  @IsOptional()
-  @Field(() => String, {
-    nullable: true,
-  })
-  firstName!: string | null;
 
   @ApiProperty({
     required: true,
@@ -67,31 +48,50 @@ class User {
 
   @ApiProperty({
     required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @Field(() => Date, {
+    nullable: true,
+  })
+  orderDate!: Date | null;
+
+  @ApiProperty({
+    required: false,
     type: String,
   })
   @IsString()
-  @MaxLength(256)
+  @MaxLength(1000)
   @IsOptional()
   @Field(() => String, {
     nullable: true,
   })
-  lastName!: string | null;
+  orderNumber!: string | null;
 
   @ApiProperty({
     required: false,
-    type: () => [Order],
+    enum: EnumOrderStatus,
   })
-  @ValidateNested()
-  @Type(() => Order)
+  @IsEnum(EnumOrderStatus)
   @IsOptional()
-  orders?: Array<Order>;
+  @Field(() => EnumOrderStatus, {
+    nullable: true,
+  })
+  status?: "Option1" | null;
 
   @ApiProperty({
-    required: true,
+    required: false,
+    type: Number,
   })
-  @IsJSONValue()
-  @Field(() => GraphQLJSON)
-  roles!: JsonValue;
+  @IsNumber()
+  @Min(-999999999)
+  @Max(999999999)
+  @IsOptional()
+  @Field(() => Number, {
+    nullable: true,
+  })
+  totalAmount!: number | null;
 
   @ApiProperty({
     required: true,
@@ -102,12 +102,13 @@ class User {
   updatedAt!: Date;
 
   @ApiProperty({
-    required: true,
-    type: String,
+    required: false,
+    type: () => User,
   })
-  @IsString()
-  @Field(() => String)
-  username!: string;
+  @ValidateNested()
+  @Type(() => User)
+  @IsOptional()
+  user?: User | null;
 }
 
-export { User as User };
+export { Order as Order };
